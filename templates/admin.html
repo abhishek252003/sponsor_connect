@@ -1,12 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Sponsorship Requests</title>
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
+
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Updated body styling for professional look */
+        body {
+            font-family: 'Roboto', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e2a44 0%, #2a3b66 100%); /* Subtle dark gradient */
+            color: #e0e7ff;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Container styling */
+        .container {
+            width: 80%;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Heading styling */
+        h1 {
+            font-size: 2.25rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #1e2a44; /* Dark blue for professionalism */
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 2rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table thead {
+            background: linear-gradient(90deg, #3b5998, #4b6cb7); /* Professional gradient */
+            color: #ffffff;
+        }
+
+        table th, table td {
+            padding: 14px 16px;
+            text-align: left;
+            border: none;
+            border-bottom: 1px solid #e0e7ff;
+        }
+
+        table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        table td {
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f8fafc; /* Light gray for alternating rows */
+        }
+
+        table tr:hover {
+            background-color: #e6f0fa; /* Light blue hover */
+            transition: background-color 0.3s ease;
+        }
+
+        /* Action links (Approve/Reject) */
+        a {
+            text-decoration: none;
+            color: #ffffff;
+            padding: 8px 16px;
+            margin-right: 10px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #007bff, #0056b3); /* Professional blue gradient */
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            display: inline-block;
+        }
+
+        a:hover {
+            background: linear-gradient(90deg, #0056b3, #003d82);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Status span (Action completed) */
+        span {
+            padding: 8px 16px;
+            background: linear-gradient(90deg, #28a745, #218838); /* Professional green gradient */
+            color: #ffffff;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Flash message styling */
+        .flash-message {
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .flash-success {
+            background: linear-gradient(90deg, #28a745, #218838); /* Green gradient */
+            color: #ffffff;
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .flash-error {
+            background: linear-gradient(90deg, #dc3545, #c82333); /* Red gradient */
+            color: #ffffff;
+            position: relative;
+            padding-left: 50px;
+        }
+
+        /* Add icons to flash messages */
+        .flash-success::before,
+        .flash-error::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .flash-success::before {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2ZmZmZmZiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMTMuMjk0IDIuMjk0YS45OTguOTk4IDAgMCAwLTEuNDE0IDBsLTUuNSAxMC41YTkuOTk4IDkuOTk4IDAgMCAwLTEuNDk0LTEuNDk0bC01LjUtNS41YS45OTguOTk4IDAgMCAwLTEuNDE0IDEuNDE0bDUuNSAxMC41YS45OTguOTk4IDAgMCAwIDEuNDE0IDBsNS41LTUuNWEuOTk4Ljk5OCAwIDAgMCAxLjQxNC0xLjQxNGwtNS41LTEwLjV6Ii8+PC9zdmc+'); /* Checkmark */
+        }
+
+        .flash-error::before {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2ZmZmZmZiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNOCAxLjVhNi41IDYuNSAwIDEgMCAwIDEzIDYuNSA2LjUgMCAwIDAgMCAxM3ptMCAxYTUuNSA1LjUgMCAxIDEgMCAxMSA1LjUgNS41IDAgMCAxIDAtMTF6bS0uNSAxLjVhLjUuNSAwIDAgMCAwIDFoMXY0YS41LjUgMCAwIDAgMCAxaC0xdi00em0uNSAzLjVhLjUuNSAwIDAgMCAwIDFoMXYxaC0xdi0xeiIvPjwvc3ZnPg=='); /* Error icon */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            table th, table td {
+                padding: 10px;
+            }
+
+            a, span {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+
+            .flash-message {
+                font-size: 0.85rem;
+                padding: 12px 15px 12px 45px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h2>Admin: All Sponsorship Requests</h2>
-  {% for r in requests %}
-    <p>{{ r }}</p>
-  {% endfor %}
+    {% extends "base.html" %}
+    {% block title %}Admin{% endblock %}
+    {% block content %}
+    <div class="container">
+        <h1>Admin Panel</h1>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div>
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Organization Name</th>
+                    <th>Event Name</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                    <tr>
+                        <td>{{ request[1] }}</td>
+                        <td>{{ request[2] }}</td>
+                        <td>{{ request[3] }}</td>
+                        <td>{{ request[5] }}</td> <!-- This will show the status -->
+                        <td>
+                            {% if request[5] == 'pending' %}
+                                <a href="{{ url_for('approve_request', request_id=request[0]) }}">Approve</a>
+                                <a href="{{ url_for('reject_request', request_id=request[0]) }}">Reject</a>
+                            {% else %}
+                                <span>Action completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}
 </body>
 </html>

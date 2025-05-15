@@ -1,17 +1,214 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Sponsorship Opportunities</title>
-</head>
-<body>
-  <h2>Available Sponsorship Requests</h2>
-  {% for r in requests %}
-    <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-      <h3>{{ r[2] }} by {{ r[1] }}</h3>
-      <strong>Category:</strong> {{ r[3] }}<br>
-      <p>{{ r[4] }}</p>
-      <a href="mailto:{{ r[5] }}">Contact</a>
+{% extends "base.html" %}
+
+{% block title %}Sponsor View{% endblock %}
+
+{% block content %}
+  <div class="container my-5">
+    <h2 class="text-center mb-4 text-dark">Available Sponsorship Requests</h2>
+
+    {% if requests %}
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for req in requests %}
+          <div class="col">
+            <div class="card shadow-lg border-light rounded-3 hover-card">
+              <div class="card-body">
+                <h5 class="card-title text-primary fw-bold">{{ req[1] }} - {{ req[2] }}</h5>
+                <h6 class="card-subtitle mb-3 text-muted">{{ req[3] }}</h6>
+                <p class="card-text">{{ req[4] }}</p>
+                <p class="text-muted"><strong>Email:</strong> {{ req[5] }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <a href="#" class="btn btn-outline-info btn-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#requestModal" data-title="{{ req[1] }}" data-subtitle="{{ req[2] }}" data-date="{{ req[3] }}" data-description="{{ req[4] }}" data-email="{{ req[5] }}" data-status="{{ req[5] }}">
+                    <i class="bi bi-eye me-2"></i> View Details
+                  </a>
+                  <span class="badge bg-{{ 'success' if req[5] == 'approved' else 'danger' }} text-light">
+                    {{ req[5] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-center text-muted">No requests yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Added Modal, CSS, and JavaScript for popup effect -->
+  <!-- Modal HTML -->
+  <div class="modal fade" id="requestModal" tabindex="-1" aria-labelledby="requestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="requestModalLabel"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6 class="modal-subtitle"></h6>
+          <p class="modal-date"><strong>Date:</strong> <span></span></p>
+          <p class="modal-description"><strong>Description:</strong> <span></span></p>
+          <p class="modal-email"><strong>Email:</strong> <span></span></p>
+          <p class="modal-status"><strong>Status:</strong> <span></span></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
-  {% endfor %}
-</body>
-</html>
+  </div>
+
+  <!-- CSS for modal styling -->
+  <style>
+    /* Modal content styling for futuristic look */
+    .modal-content {
+      background: linear-gradient(145deg, #1e2a44 0%, #2a3b66 100%);
+      border: 2px solid transparent;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+      color: #e0e7ff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    /* Neon border effect for modal */
+    .modal-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 15px;
+      border: 2px solid transparent;
+      background: linear-gradient(45deg, #00ddeb, #ff007f) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    /* Modal header */
+    .modal-header {
+      background: none;
+      border-bottom: 1px solid #00ddeb;
+      padding: 15px 20px;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      color: #00ddeb; /* Neon cyan */
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #00ddeb;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .btn-close-white {
+      filter: invert(1); /* Make close button white for dark theme */
+    }
+
+    /* Modal body */
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-subtitle {
+      font-size: 1.2rem;
+      color: #b0b8d6;
+      margin-bottom: 15px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .modal-body p {
+      font-size: 1rem;
+      color: #e0e7ff;
+      margin-bottom: 10px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .modal-body strong {
+      color: #00ddeb;
+      text-shadow: 0 0 5px #00ddeb;
+    }
+
+    .modal-status span {
+      color: #ff007f; /* Neon pink for status */
+      text-transform: uppercase;
+    }
+
+    /* Modal footer */
+    .modal-footer {
+      border-top: 1px solid #00ddeb;
+      padding: 15px 20px;
+    }
+
+    .modal-footer .btn-primary {
+      background: linear-gradient(45deg, #00ddeb, #ff007f);
+      border: none;
+      border-radius: 8px;
+      color: #e0e7ff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 10px 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 221, 235, 0.5);
+    }
+
+    .modal-footer .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 221, 235, 0.7);
+      background: linear-gradient(45deg, #ff007f, #00ddeb);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .modal-title {
+        font-size: 1.3rem;
+      }
+
+      .modal-subtitle {
+        font-size: 1rem;
+      }
+
+      .modal-body p {
+        font-size: 0.9rem;
+      }
+
+      .modal-footer .btn-primary {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+      }
+    }
+  </style>
+
+  <!-- JavaScript to populate modal -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Get all "View Details" links
+      const viewDetailLinks = document.querySelectorAll('.btn-outline-info');
+
+      viewDetailLinks.forEach(link => {
+        link.addEventListener('click', function () {
+          // Get data attributes from the link
+          const title = this.getAttribute('data-title');
+          const subtitle = this.getAttribute('data-subtitle');
+          const date = this.getAttribute('data-date');
+          const description = this.getAttribute('data-description');
+          const email = this.getAttribute('data-email');
+          const status = this.getAttribute('data-status');
+
+          // Populate modal content
+          document.querySelector('#requestModalLabel').textContent = `${title} - ${subtitle}`;
+          document.querySelector('.modal-subtitle').textContent = date;
+          document.querySelector('.modal-date span').textContent = date;
+          document.querySelector('.modal-description span').textContent = description;
+          document.querySelector('.modal-email span').textContent = email;
+          document.querySelector('.modal-status span').textContent = status;
+        });
+      });
+    });
+  </script>
+{% endblock %}

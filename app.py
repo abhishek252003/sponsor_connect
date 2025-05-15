@@ -1,13 +1,36 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash, url_for
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
+from flask_bcrypt import Bcrypt
 import sqlite3
-import os
 
 app = Flask(__name__)
+app.secret_key = 'ABHIshek@1234'
 
-# --- DATABASE SETUP ---
+# Flask-Login setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+# Flash message for unauthorized access
+@login_manager.unauthorized_handler
+def unauthorized():
+    flash('Please log in to access this page.', 'warning')
+    return redirect(url_for('login'))
+
+bcrypt = Bcrypt(app)
+
+# --- User class ---
+class User(UserMixin):
+    def __init__(self, id, username, role):
+        self.id = id
+        self.username = username
+        self.role = role
+
+# --- Initialize DB ---
 def init_db():
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
+
     c.execute('''
         CREATE TABLE IF NOT EXISTS sponsorship_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,7 +38,17 @@ def init_db():
             event_name TEXT,
             category TEXT,
             description TEXT,
-            email TEXT
+            email TEXT,
+            status TEXT DEFAULT 'pending'
+        )
+    ''')
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT
         )
     ''')
     conn.commit()
@@ -23,13 +56,26 @@ def init_db():
 
 init_db()
 
-# --- ROUTES ---
+# --- Load user for login manager ---
+@login_manager.user_loader
+def load_user(user_id):
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user_data = c.fetchone()
+    conn.close()
+    if user_data:
+        return User(user_data[0], user_data[1], user_data[3])
+    return None
+
+# --- Routes ---
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/submit', methods=['GET', 'POST'])
+@login_required
 def submit():
     if request.method == 'POST':
         org_name = request.form['org_name']
@@ -47,10 +93,12 @@ def submit():
         conn.commit()
         conn.close()
 
+        flash('Sponsorship request submitted successfully!', 'success')
         return redirect('/')
     return render_template('submit.html')
 
 @app.route('/sponsors')
+@login_required
 def sponsors():
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
@@ -60,7 +108,11 @@ def sponsors():
     return render_template('sponsors.html', requests=rows)
 
 @app.route('/admin')
+@login_required
 def admin():
+    if current_user.role != 'admin':
+        flash('Unauthorized access!', 'danger')
+        return redirect('/')
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
     c.execute('SELECT * FROM sponsorship_requests')
@@ -68,7 +120,91 @@ def admin():
     conn.close()
     return render_template('admin.html', requests=rows)
 
-# --- MAIN ENTRY POINT ---
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        c.execute('SELECT * FROM users WHERE username = ?', (username,))
+        user_data = c.fetchone()
+        conn.close()
+
+        if user_data and bcrypt.check_password_hash(user_data[2], password):
+            user = User(user_data[0], user_data[1], user_data[3])
+            login_user(user)
+            flash('Login successful', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid credentials', 'danger')
+
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        role = request.form['role']
+
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        try:
+            conn = sqlite3.connect('data.db')
+            c = conn.cursor()
+            c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+                      (username, hashed_password, role))
+            conn.commit()
+            conn.close()
+            flash('User registered successfully!', 'success')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            flash('Username already exists.', 'danger')
+
+    return render_template('signup.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out successfully!', 'info')
+    return redirect(url_for('login'))
+
+# --- Approve Request ---
+@app.route('/approve_request/<int:request_id>')
+@login_required
+def approve_request(request_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access!', 'danger')
+        return redirect('/')
+    
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute('UPDATE sponsorship_requests SET status = ? WHERE id = ?', ('approved', request_id))
+    conn.commit()
+    conn.close()
+    
+    flash('Request approved!', 'success')
+    return redirect(url_for('admin'))
+
+# --- Reject Request ---
+@app.route('/reject_request/<int:request_id>')
+@login_required
+def reject_request(request_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access!', 'danger')
+        return redirect('/')
+    
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute('UPDATE sponsorship_requests SET status = ? WHERE id = ?', ('rejected', request_id))
+    conn.commit()
+    conn.close()
+    
+    flash('Request rejected!', 'danger')
+    return redirect(url_for('admin'))
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=5000)

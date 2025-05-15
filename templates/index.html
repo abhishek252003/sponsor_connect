@@ -1,12 +1,495 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Sponsor Connect</title>
-  <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-  <h1>Welcome to Sponsor Connect</h1>
-  <a href="/submit">Request Sponsorship</a> |
-  <a href="/sponsors">View Sponsorship Opportunities</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Roboto', 'Arial', sans-serif;
+        background: linear-gradient(135deg, #0d1b2a, #1b263b);
+        color: #e0e7ff;
+        line-height: 1.6;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Animated background effect */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(0, 221, 235, 0.1) 10%, transparent 10.01%);
+        background-size: 30px 30px;
+        animation: pulse 10s infinite ease-in-out;
+        z-index: -1;
+    }
+
+    /* Hero Section */
+    .hero {
+        background: linear-gradient(145deg, #1e2a44, #2a3b66);
+        color: #e0e7ff;
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        border-bottom: 2px solid transparent;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-bottom: 2px solid transparent;
+        background: linear-gradient(45deg, #00ddeb, #ff007f) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        opacity: 0.7;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        color: #00ddeb;
+        text-shadow: 0 0 10px #00ddeb;
+        margin-bottom: 1rem;
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        color: #b0b8d6;
+        margin-bottom: 2rem;
+    }
+
+    .hero .btn-light {
+        background: linear-gradient(45deg, #00ddeb, #ff007f);
+        border: none;
+        color: #e0e7ff;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-radius: 8px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 221, 235, 0.5);
+    }
+
+    .hero .btn-light:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 221, 235, 0.7);
+        background: linear-gradient(45deg, #ff007f, #00ddeb);
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+        background: linear-gradient(145deg, #2a3b66, #1e2a44);
+        padding: 60px 0;
+        color: #e0e7ff;
+    }
+
+    .how-it-works h2 {
+        font-size: 2rem;
+        color: #00ddeb;
+        text-shadow: 0 0 10px #00ddeb;
+        margin-bottom: 2rem;
+    }
+
+    .how-it-works .icon-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 20px;
+        background: linear-gradient(45deg, #00ddeb, #ff007f);
+        box-shadow: 0 0 10px rgba(0, 221, 235, 0.5);
+    }
+
+    .how-it-works .card {
+        background: #1e2a44;
+        border: none;
+        border-radius: 10px;
+        padding: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid transparent;
+    }
+
+    .how-it-works .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: linear-gradient(45deg, #00ddeb, #ff007f) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        opacity: 0.7;
+    }
+
+    .how-it-works .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .how-it-works h5 {
+        color: #e0e7ff;
+        font-size: 1.25rem;
+    }
+
+    .how-it-works p {
+        color: #b0b8d6;
+        font-size: 0.95rem;
+    }
+
+    /* Why Choose Us Section */
+    .why-choose-us {
+        background: linear-gradient(145deg, #1e2a44, #2a3b66);
+        padding: 60px 0;
+        color: #e0e7ff;
+    }
+
+    .why-choose-us h2 {
+        font-size: 2rem;
+        color: #00ddeb;
+        text-shadow: 0 0 10px #00ddeb;
+        margin-bottom: 1.5rem;
+    }
+
+    .why-choose-us p.lead {
+        color: #b0b8d6;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .why-choose-us .card {
+        background: #2a3b66;
+        border: none;
+        border-radius: 10px;
+        padding: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid transparent;
+    }
+
+    .why-choose-us .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: linear-gradient(45deg, #00ddeb, #ff007f) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        opacity: 0.7;
+    }
+
+    .why-choose-us .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .why-choose-us h4 {
+        color: #e0e7ff;
+        font-size: 1.25rem;
+    }
+
+    .why-choose-us p {
+        color: #b0b8d6;
+        font-size: 0.95rem;
+    }
+
+    /* Testimonials Section */
+    .testimonials {
+        background: linear-gradient(145deg, #2a3b66, #1e2a44);
+        padding: 60px 0;
+        color: #e0e7ff;
+    }
+
+    .testimonials h2 {
+        font-size: 2rem;
+        color: #00ddeb;
+        text-shadow: 0 0 10px #00ddeb;
+        margin-bottom: 2rem;
+    }
+
+    .testimonials blockquote {
+        background: #1e2a44;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid transparent;
+        transition: transform 0.3s ease;
+    }
+
+    .testimonials blockquote::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: linear-gradient(45deg, #00ddeb, #ff007f) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        opacity: 0.7;
+    }
+
+    .testimonials blockquote:hover {
+        transform: translateY(-5px);
+    }
+
+    .testimonials p {
+        color: #b0b8d6;
+        font-size: 0.95rem;
+    }
+
+    .testimonials .blockquote-footer {
+        color: #00ddeb;
+        font-size: 0.85rem;
+    }
+
+    /* Call to Action Section */
+    .cta {
+        background: linear-gradient(90deg, #00ddeb, #ff007f);
+        color: #e0e7ff;
+        padding: 60px 0;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .cta h2 {
+        font-size: 2.5rem;
+        color: #ffffff;
+        text-shadow: 0 0 10px #ffffff;
+        margin-bottom: 1.5rem;
+    }
+
+    .cta p {
+        font-size: 1.2rem;
+        color: #e0e7ff;
+        margin-bottom: 2rem;
+    }
+
+    .cta .btn-light {
+        background: #ffffff;
+        color: #1e2a44;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        border-radius: 8px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .cta .btn-light:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        background: #e0e7ff;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+        0% { opacity: 0.3; }
+        50% { opacity: 0.5; }
+        100% { opacity: 0.3; }
+    }
+
+    @keyframes glow {
+        0% { text-shadow: 0 0 10px #00ddeb, 0 0 20px #00ddeb; }
+        100% { text-shadow: 0 0 20px #00ddeb, 0 0 30px #00ddeb; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 2rem;
+        }
+
+        .hero p,
+        .cta p {
+            font-size: 1rem;
+        }
+
+        .hero .btn-light,
+        .cta .btn-light {
+            font-size: 0.95rem;
+            padding: 10px 20px;
+        }
+
+        .how-it-works h2,
+        .why-choose-us h2,
+        .testimonials h2 {
+            font-size: 1.75rem;
+        }
+
+        .cta h2 {
+            font-size: 2rem;
+        }
+
+        .how-it-works .card,
+        .why-choose-us .card,
+        .testimonials blockquote {
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .hero,
+        .how-it-works,
+        .why-choose-us,
+        .testimonials,
+        .cta {
+            padding: 40px 0;
+        }
+
+        .container {
+            padding: 0 15px;
+        }
+
+        .row {
+            margin: 0;
+        }
+
+        .col-md-4 {
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3"><i class="fas fa-handshake me-2"></i> Connecting Sponsors with Opportunities</h1>
+        <p class="lead mb-4">Submit your event, get sponsored, and grow together with the best sponsors in your industry.</p>
+        <a href="/submit" class="btn btn-light btn-lg px-5 py-3">Submit a Request</a>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">How It Works</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="icon-circle mb-3">
+                        <i class="bi bi-calendar-event fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Submit Your Event</h5>
+                    <p>Fill out a simple form to submit your event for potential sponsorship. Include all relevant details to attract the right sponsors.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="icon-circle mb-3">
+                        <i class="bi bi-check-circle fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Get Approved</h5>
+                    <p>Your request will be reviewed, and we will connect you with sponsors interested in supporting your event.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="icon-circle mb-3">
+                        <i class="bi bi-hand-thumbs-up fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Grow Together</h5>
+                    <p>With the right sponsorship, your event will flourish. We help you find the best match for your event needs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="why-choose-us py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Why Choose Us</h2>
+        <p class="lead mb-4">We offer a streamlined and efficient platform for connecting event organizers with sponsors who are ready to help your events succeed. Here’s why you should partner with us:</p>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <h4 class="fw-bold mb-3"><i class="fas fa-network-wired me-2"></i> Wide Network of Sponsors</h4>
+                    <p>Our platform features a vast network of sponsors ready to support events across various categories and industries.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <h4 class="fw-bold mb-3"><i class="fas fa-bolt me-2"></i> Easy and Fast Process</h4>
+                    <p>Our platform is designed for simplicity, allowing you to submit your event in minutes and get connected with sponsors quickly.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <h4 class="fw-bold mb-3"><i class="fas fa-balance-scale me-2"></i> Transparent and Fair</h4>
+                    <p>We ensure a transparent and fair process for both sponsors and event organizers, ensuring a win-win situation for everyone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">What Our Users Say</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <blockquote class="blockquote">
+                    <p class="mb-3"><i class="fas fa-quote-left me-2"></i> "This platform made it so easy for us to connect with sponsors. Our event was funded in no time!"</p>
+                    <footer class="blockquote-footer">Jane Doe, Event Organizer</footer>
+                </blockquote>
+            </div>
+            <div class="col-md-4 mb-4">
+                <blockquote class="blockquote">
+                    <p class="mb-3"><i class="fas fa-quote-left me-2"></i> "As a sponsor, we’ve found great opportunities to support incredible events. The process is smooth and seamless."</p>
+                    <footer class="blockquote-footer">John Smith, Sponsor</footer>
+                </blockquote>
+            </div>
+            <div class="col-md-4 mb-4">
+                <blockquote class="blockquote">
+                    <p class="mb-3"><i class="fas fa-quote-left me-2"></i> "A game-changer! The platform helped us find the perfect event to sponsor, and the connection was effortless."</p>
+                    <footer class="blockquote-footer">Emily Brown, Sponsor</footer>
+                </blockquote>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta bg-primary text-white py-5">
+    <div class="container text-center">
+        <h2 class="display-4 fw-bold mb-4"><i class="fas fa-rocket me-2"></i> Ready to Get Started?</h2>
+        <p class="lead mb-4">Submit your event today and get connected with potential sponsors that can help make your event a success!</p>
+        <a href="/submit" class="btn btn-light btn-lg px-5 py-3">Submit a Request</a>
+    </div>
+</section>
+{% endblock %}
