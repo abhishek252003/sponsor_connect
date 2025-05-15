@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
+import os
 
 app = Flask(__name__)
 
-# DB Setup
+# --- DATABASE SETUP ---
 def init_db():
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
@@ -22,12 +23,12 @@ def init_db():
 
 init_db()
 
-# Home
+# --- ROUTES ---
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Form for sponsees
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     if request.method == 'POST':
@@ -39,15 +40,16 @@ def submit():
 
         conn = sqlite3.connect('data.db')
         c = conn.cursor()
-        c.execute('INSERT INTO sponsorship_requests (org_name, event_name, category, description, email) VALUES (?, ?, ?, ?, ?)',
-                  (org_name, event_name, category, description, email))
+        c.execute('''
+            INSERT INTO sponsorship_requests (org_name, event_name, category, description, email)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (org_name, event_name, category, description, email))
         conn.commit()
         conn.close()
 
         return redirect('/')
     return render_template('submit.html')
 
-# Sponsor view
 @app.route('/sponsors')
 def sponsors():
     conn = sqlite3.connect('data.db')
@@ -57,7 +59,6 @@ def sponsors():
     conn.close()
     return render_template('sponsors.html', requests=rows)
 
-# Admin view
 @app.route('/admin')
 def admin():
     conn = sqlite3.connect('data.db')
@@ -67,5 +68,7 @@ def admin():
     conn.close()
     return render_template('admin.html', requests=rows)
 
+# --- MAIN ENTRY POINT ---
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
