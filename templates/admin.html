@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Sponsorship Requests</title>
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
-
     <style>
         /* Basic Reset */
         * {
@@ -225,6 +224,18 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Status Filter Form -->
+        <!-- <div class="status-filter">
+            <form method="GET" action="{{ url_for('admin') }}">
+                <select name="status" onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Requests</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </form>
+        </div> -->
+
         <table>
             <thead>
                 <tr>
@@ -249,6 +260,10 @@
                             {% else %}
                                 <span>Action completed</span>
                             {% endif %}
+                          <form action="{{ url_for('delete_request', request_id=request[0]) }}" method="POST" style="display:inline;">
+                                <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px;">Delete</button>
+                            </form>
+
                         </td>
                     </tr>
                 {% endfor %}

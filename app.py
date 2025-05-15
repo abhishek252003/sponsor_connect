@@ -107,18 +107,54 @@ def sponsors():
     conn.close()
     return render_template('sponsors.html', requests=rows)
 
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
     if current_user.role != 'admin':
         flash('Unauthorized access!', 'danger')
         return redirect('/')
+    
+    search_query = request.args.get('search', '')
+    status_filter = request.args.get('status', '')
+
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
-    c.execute('SELECT * FROM sponsorship_requests')
+
+    query = 'SELECT * FROM sponsorship_requests WHERE 1=1'
+    params = []
+
+    if search_query:
+        query += ' AND (org_name LIKE ? OR event_name LIKE ? OR category LIKE ? OR description LIKE ?)'
+        params.extend([f'%{search_query}%'] * 4)
+
+    if status_filter:
+        query += ' AND status = ?'
+        params.append(status_filter)
+
+    c.execute(query, params)
     rows = c.fetchall()
     conn.close()
-    return render_template('admin.html', requests=rows)
+    
+    return render_template('admin.html', requests=rows, search_query=search_query, status_filter=status_filter)
+
+@app.route('/admin/delete/<int:request_id>', methods=['POST'])
+@login_required
+def delete_request(request_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access!', 'danger')
+        return redirect('/')
+
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    
+    # Delete the request from the database using its ID
+    c.execute('DELETE FROM sponsorship_requests WHERE id = ?', (request_id,))
+    conn.commit()
+    conn.close()
+
+    flash('Sponsorship request deleted successfully!', 'success')
+    return redirect(url_for('admin'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
